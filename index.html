@@ -580,3 +580,12 @@
   </script>
 </body>
 </html>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js')
+      .then(()=>document.getElementById('estadoOffline').textContent='✅ Offline listo')
+      .catch(()=>document.getElementById('estadoOffline').textContent='⚠️ Offline no disponible');
+  } else {
+    document.getElementById('estadoOffline').textContent='⚠️ Navegador sin Service Worker';
+  }
+</script>

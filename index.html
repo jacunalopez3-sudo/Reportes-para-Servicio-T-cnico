@@ -538,54 +538,20 @@
     }
 
     /******************** Service Worker (inline via Blob) ********************/
-    const SW_CODE = `
-      const CACHE = 'reptec-cache-v1';
-      const ASSETS = [
-        self.location.href,
-        'https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js',
-        'https://cdn.jsdelivr.net/npm/signature_pad@5.0.0/dist/signature_pad.umd.min.js'
-      ];
-      self.addEventListener('install', evt => {
-        evt.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(()=> self.skipWaiting()));
-      });
-      self.addEventListener('activate', evt => { evt.waitUntil(self.clients.claim()); });
-      self.addEventListener('fetch', evt => {
-        const req = evt.request;
-        evt.respondWith(
-          caches.match(req).then(res => res || fetch(req).then(r => {
-            const copy = r.clone();
-            if (req.method === 'GET' && (req.url.startsWith('http'))) {
-              caches.open(CACHE).then(c => c.put(req, copy)).catch(()=>{});
-            }
-            return r;
-          }).catch(()=> caches.match(self.location.href)))
-        );
-      });
-    `;
-
-    if ('serviceWorker' in navigator) {
-      const blob = new Blob([SW_CODE], {type:'text/javascript'});
-      const swUrl = URL.createObjectURL(blob);
-      navigator.serviceWorker.register(swUrl).then(()=>{
-        document.getElementById('estadoOffline').textContent = '✅ Offline listo';
-      }).catch(()=>{
-        document.getElementById('estadoOffline').textContent = '⚠️ Offline no disponible';
-      });
-    } else {
-      document.getElementById('estadoOffline').textContent = '⚠️ Navegador sin Service Worker';
-    }
-
-    // Render inicial
-    renderTabla();
-  </script>
-</body>
-</html>
-<script>
+    <script>
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js')
-      .then(()=>document.getElementById('estadoOffline').textContent='✅ Offline listo')
-      .catch(()=>document.getElementById('estadoOffline').textContent='⚠️ Offline no disponible');
+    navigator.serviceWorker
+      .register('./sw.js?v=2')  // <- nota el ?v=2 para forzar actualización
+      .then(() => {
+        const el = document.getElementById('estadoOffline');
+        if (el) el.textContent = '✅ Offline listo';
+      })
+      .catch(() => {
+        const el = document.getElementById('estadoOffline');
+        if (el) el.textContent = '⚠️ Offline no disponible';
+      });
   } else {
-    document.getElementById('estadoOffline').textContent='⚠️ Navegador sin Service Worker';
+    const el = document.getElementById('estadoOffline');
+    if (el) el.textContent = '⚠️ Navegador sin Service Worker';
   }
 </script>
